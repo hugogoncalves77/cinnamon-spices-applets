@@ -8,6 +8,7 @@ const Settings = imports.ui.settings;
 const Gettext = imports.gettext;
 
 const sensorRegex = /^([\sA-z\w]+[\s|:|\d]{1,4})(?:\s+\+)(\d+\.\d+)°[FC]|(?:\s+\()([a-z]+)(?:[\s=+]+)(\d+\.\d)°[FC],\s([a-z]+)(?:[\s=+]+)(\d+\.\d)/gm;
+const cpuIdentifiers = ['Tctl', 'CPU Temperature'];
 
 const _ = function(str) {
   let translation = Gettext.gettext(str);
@@ -127,6 +128,7 @@ CPUTemperatureApplet.prototype = {
         let packageCount = 0;
         let s = 0;
         let n = 0; //sum and count
+        let temp = 0;
         for (let i = 0; i < tempInfo.length; i++) {
           if (tempInfo[i].label.indexOf('Package') > -1) {
             critical = tempInfo[i].crit ? tempInfo[i].crit : 0;
@@ -138,9 +140,16 @@ CPUTemperatureApplet.prototype = {
             s += tempInfo[i].value;
             n++;
           }
-          items.push(tempInfo[i].label + ' ' + this._formatTemp(tempInfo[i].value));
+          if (cpuIdentifiers.indexOf(tempInfo[i].label) > -1) {
+            temp = tempInfo[i].value;
+          }
+          items.push(tempInfo[i].label + ': ' + this._formatTemp(tempInfo[i].value));
         }
-        let temp = (packageIds / packageCount) || (s / n);
+        if (packageCount > 0) {
+            temp = packageIds / packageCount;
+        } else if (n > 0) {
+            temp = s / n;
+        }
         let label = this._formatTemp(temp);
         if (critical && temp >= critical) {
           this.title = _('Critical') + ': ' + label;
@@ -227,7 +236,6 @@ CPUTemperatureApplet.prototype = {
       if (match.index === sensorRegex.lastIndex) {
           sensorRegex.lastIndex++;
       }
-
       let entry = {};
       for (let i = 0; i < match.length; i++) {
         if (!match[i]) {
@@ -236,7 +244,7 @@ CPUTemperatureApplet.prototype = {
         if (i % 2) {
           match[i] = match[i].trim();
           if (match[i].indexOf(':') > -1) {
-            entry.label = match[i];
+            entry.label = match[i].replace(/:/, '').trim();
           }
         } else {
           match[i] = parseFloat(match[i].trim());
@@ -254,7 +262,6 @@ CPUTemperatureApplet.prototype = {
         continue;
       }
       entries.push(entry);
-
     }
     return entries;
   },

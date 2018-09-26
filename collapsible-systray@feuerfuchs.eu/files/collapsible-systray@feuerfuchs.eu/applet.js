@@ -94,7 +94,7 @@ CollapsibleSystrayApplet.prototype = {
         // Variables
 
         this._direction          = (orientation == St.Side.TOP || orientation == St.Side.BOTTOM) ? this.Direction.HORIZONTAL : this.Direction.VERTICAL;
-        this._signalManager      = new SignalManager.SignalManager(this);
+        this._signalManager      = new SignalManager.SignalManager(null);
         this._hovering           = false;
         this._hoverTimerID       = null;
         this._registeredAppIcons = {};
@@ -759,7 +759,7 @@ CollapsibleSystrayApplet.prototype = {
         }
         iconWrap.setVertical(this._direction == this.Direction.VERTICAL);
 
-        if (["livestreamer-twitch-gui", "chromium", "swt"].indexOf(role) != -1) {
+        if (["livestreamer-twitch-gui", "chromium", "swt", "skypeforlinux"].indexOf(role) != -1) {
             iconWrap.csDisable = Lang.bind(this, function() {
                 if (this.animationSupport) {
                     iconWrapContent.set_child(null);
